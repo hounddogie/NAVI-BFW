@@ -34,8 +34,8 @@ function persue() {
             HardRight   = 0
             HardLeft    = 0
             Facing      = 0
-            TurnRight   = 1
-            TurnLeft    = 0
+            TurnRight   = 0
+            TurnLeft    = 1
             Steer       =-1
             if (Dang < -15.0) {
            
