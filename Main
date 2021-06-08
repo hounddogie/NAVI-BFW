@@ -39,10 +39,16 @@ function persue() {
             Steer       =-1
             if (Dang < -15.0) {
            
-            HardRight   = TurnLeft
-            HardLeft    = 0
+            HardRight   = 0
+            HardLeft    = TurnLeft
             Steer       =-1
         }
+        else{TurnRight   = 0
+            TurnLeft    = 0    
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 0
+            }
         }
         if (Dang > 2.0)  {
             Facing      = 0 
@@ -51,11 +57,18 @@ function persue() {
             HardRight   = 0
             HardLeft    = 0
             Steer       = 1
-            if      (Dang > 15.0) {
+        if      (Dang > 15.0) {
             HardRight   = TurnRight
-                 
+                
             Steer       =1
         }
+        else{
+            TurnRight   = 0
+            TurnLeft    = 0    
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 0
+            }
         
         }
         
