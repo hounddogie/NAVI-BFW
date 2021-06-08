@@ -16,7 +16,7 @@ if(first()){
     holoCreate(1)
     holoAng(1,entity():angles())
     holoParent(1,entity())
-    
+    holoModel(1,"models/sprops/misc/axis_plane.mdl")
     
     TRUE=1
     FALSE=0
@@ -24,76 +24,83 @@ if(first()){
     LRsens=2
     UDsensH=15
     LRsensH=15
-holoModel(1,"models/sprops/misc/axis_plane.mdl")
+    UpLimit=45
+    DownLimit=-45
+
 }
 interval(1)
 function persue() {     
- 
-        if      (Dang > 15.0) {
-            Facing      =FALSE
-            TurnRight   =FALSE
-            TurnLeft    =FALSE
-            HardRight   =TRUE
-            HardLeft    =FALSE
-            Steer       =-1
-        }
-        elseif (Dang < -15.0) {
-            Facing      =FALSE
-            TurnRight   =FALSE
-            TurnLeft    =TRUE
-            HardRight   =FALSE
-            HardLeft    =TRUE
-            Steer       =-1
-        }
-        elseif (Dang < -2.0) {
-            Facing      =FALSE
-            TurnRight   =FALSE
-            TurnLeft    =TRUE
+         if (Dang < -2.0) {
+            Facing      = 0
+            TurnRight   = 0
+            TurnLeft    = 1
             Steer       =-1
         }
         elseif (Dang > 2.0)  {
-            Facing      =FALSE
-            TurnRight   =TRUE
-            TurnLeft    =TRUE
-            HardRight   =FALSE
-            HardLeft    =FALSE
-            Steer       =TRUE
+            Facing      = 0
+            TurnRight   = 0
+            TurnLeft    = 1
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 1
+        }
+        elseif      (Dang > 15.0) {
+            Facing      = 0
+            TurnRight   = 0
+            TurnLeft    = 0
+            HardRight   = 0
+            HardLeft    = TurnLeft            
+            Steer       =-1
+        }
+        elseif (Dang < -15.0) {
+            Facing      = 0
+            TurnRight   = 0
+            TurnLeft    = 0
+            HardRight   = TurnRight
+            HardLeft    = 0
+            Steer       =-1
         }
         else {
-            Facing      =TRUE
-            TurnRight   =FALSE
-            TurnLeft    =FALSE    
-            HardRight   =FALSE
-            HardLeft    =FALSE
-            Steer       =FALSE
+            Facing      = 1
+            TurnRight   = 0
+            TurnLeft    = 0    
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 0
         }
             
         if (Fang > 1.0) {
-            TurnUp      =TRUE
-            TurnDown    =FALSE
-            Lookin      =FALSE
+            TurnUp      = 1
+            TurnDown    = 0
+            Lookin      = 0
             Bob=Bob*1.5
         }
         elseif (Fang < -1.0) {
-            TurnUp      =FALSE
-            TurnDown    =TRUE
-            Lookin      =FALSE
+            TurnUp      = 0
+            TurnDown    = 1
+            Lookin      = 0
             Bob=Bob/1.5
         }
         else {
-            Lookin      =TRUE
-            TurnUp      =FALSE
-            TurnDown    =FALSE
+            Lookin      = 1
+            TurnUp      = 0
+            TurnDown    = 0
 #[            Bob=Bob]#
         }
         if(TurnUp){
             Y=Y+UDsens
             Y=$Y*UDsens+Y
-           
-        }
-        elseif(TurnDown){
+            
+            if(Y>UpLimit){
+                Y=UpLimit
+            }
+       elseif(TurnDown){
             Y=Y-UDsens
             Y=$Y*-UDsens+Y
+            
+            if(Y<DownLimit){
+                Y=DownLimit
+            }
         }
         else{}
         
@@ -123,7 +130,7 @@ function persue() {
     else{
     }
     
-    
+}
     
 #[         if (Tdist <10){Deploy=1 #[W=0}
             else{Deploy=0 #[W=1]}]#
@@ -134,20 +141,20 @@ function persue() {
 function main() {
     if(Bsr<50)
     {
-        W=-1
+        W=1
         Steer=1
         timer("settle",2000)
     }
     if(Bsl<50)
     {
-        W=-1
+        W=1
         Steer=1
         timer("settle",2000)
     }
     if(clk("settle"))
     {
-        W=FALSE
-        Steer=FALSE
+        W=0
+        Steer=0
     }
     
     
@@ -204,6 +211,5 @@ function main() {
     }
 }
 }
-if(cpuUsage()<100*1000000){
 main()
-}
+
