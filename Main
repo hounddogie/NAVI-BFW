@@ -31,36 +31,35 @@ if(first()){
 interval(1)
 function persue() {     
          if (Dang < -2.0) {
+            HardRight   = 0
+            HardLeft    = 0
             Facing      = 0
-            TurnRight   = 0
-            TurnLeft    = 1
+            TurnRight   = 1
+            TurnLeft    = 0
+            Steer       =-1
+            if (Dang < -15.0) {
+           
+            HardRight   = TurnLeft
+            HardLeft    = 0
             Steer       =-1
         }
-        elseif (Dang > 2.0)  {
-            Facing      = 0
-            TurnRight   = 0
-            TurnLeft    = 1
+        }
+        if (Dang > 2.0)  {
+            Facing      = 0 
+            TurnRight   = 1 
+            TurnLeft    = 0
             HardRight   = 0
             HardLeft    = 0
             Steer       = 1
-        }
-        elseif      (Dang > 15.0) {
-            Facing      = 0
-            TurnRight   = 0
-            TurnLeft    = 0
-            HardRight   = 0
-            HardLeft    = TurnLeft            
-            Steer       =-1
-        }
-        elseif (Dang < -15.0) {
-            Facing      = 0
-            TurnRight   = 0
-            TurnLeft    = 0
+            if      (Dang > 15.0) {
             HardRight   = TurnRight
-            HardLeft    = 0
-            Steer       =-1
+                 
+            Steer       =1
         }
-        else {
+        
+        }
+        
+        if(Dang>=-2&&Dang<=2) {
             Facing      = 1
             TurnRight   = 0
             TurnLeft    = 0    
@@ -212,4 +211,3 @@ function main() {
 }
 }
 main()
-
