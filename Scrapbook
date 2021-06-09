@@ -1,7 +1,23 @@
 ----------------------
 Beacon networking
 ----------------------
+More on the beacon's behaviors.
+The beacons work in a hybrid ring/mesh topology with 4 nodes.
+Mostly the Ring topology.
 
+
+How a transmission occurs:
+A wire radio's 4 outputs on each beacon will give the following:
+Channel (identifies which beacon it is)
+X pos
+Y pos
+Z pos
+
+The radios will be used to tell mechs where the beacons were put down at.
+Once a Mech gets the information listed above, it will assess which beacon is closest, 
+and then point its mounted transferrer to the satelite dish on that beacon.
+PRetty basic for now, soon the beacons will use relaying to bounce info between eachother using line 
+of sight communication. Save that for when we establish a communication protocol for the mechs
 ----------------------
 Mech behaviour
 ----------------------
@@ -15,6 +31,11 @@ Mech roles
 NAVI commanding functions
 ----------------------
 
+
+
+----------------------
+NAVI comms protocol
+----------------------
 
 
 
