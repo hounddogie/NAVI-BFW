@@ -1,0 +1,232 @@
+@name NAVI BFW
+#[  Outputs wether to turn left or right
+    in order to be bearing at the given
+    position.
+    
+    
+     TorsoMDL = "models/hunter/blocks/cube2x2x1.mdl"
+    HipMDL = "models/hunter/blocks/cube2x4x1.mdl"
+    FootMDL = "models/phxtended/tri2x1x1solid.mdl"
+]#
+@inputs Hip:entity Torso:entity Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
+@outputs Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
+@persist Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob UDsens LRsens UDsensH  LRsensH
+@trigger Enable 
+if(first()){
+    holoCreate(1)
+    holoAng(1,entity():angles())
+    holoParent(1,entity())
+    holoModel(1,"models/sprops/misc/axis_plane.mdl")
+    
+    TRUE=1
+    FALSE=0
+    UDsens=2
+    LRsens=2
+    UDsensH=15
+    LRsensH=15
+    UpLimit=45
+    DownLimit=-45
+
+}
+interval(1)
+function persue() {     
+         if (Dang < -2.0) {
+            HardRight   = 0
+            HardLeft    = 0
+            Facing      = 0
+            TurnRight   = 0
+            TurnLeft    = 1
+            Steer       =-1
+            if (Dang < -15.0) {
+           
+            HardRight   = 0
+            HardLeft    = TurnLeft
+            Steer       =-1
+        }
+        else{TurnRight   = 0
+            TurnLeft    = 0    
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 0
+            }
+        }
+        if (Dang > 2.0)  {
+            Facing      = 0 
+            TurnRight   = 1 
+            TurnLeft    = 0
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 1
+        if      (Dang > 15.0) {
+            HardRight   = TurnRight
+                
+            Steer       =1
+        }
+        else{
+            TurnRight   = 0
+            TurnLeft    = 0    
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 0
+            }
+        
+        }
+        
+        if(Dang>=-2&&Dang<=2) {
+            Facing      = 1
+            TurnRight   = 0
+            TurnLeft    = 0    
+            HardRight   = 0
+            HardLeft    = 0
+            Steer       = 0
+        }
+            
+        if (Fang > 1.0) {
+            TurnUp      = 1
+            TurnDown    = 0
+            Lookin      = 0
+            Bob=Bob*1.5
+        }
+        elseif (Fang < -1.0) {
+            TurnUp      = 0
+            TurnDown    = 1
+            Lookin      = 0
+            Bob=Bob/1.5
+        }
+        else {
+            Lookin      = 1
+            TurnUp      = 0
+            TurnDown    = 0
+#[            Bob=Bob]#
+        }
+        if(TurnUp){
+            Y=Y+UDsens
+            Y=$Y*UDsens+Y
+            
+            if(Y>UpLimit){
+                Y=UpLimit
+            }
+       elseif(TurnDown){
+            Y=Y-UDsens
+            Y=$Y*-UDsens+Y
+        }
+            if(Y<DownLimit){
+                Y=DownLimit
+            }
+        }
+        else{}
+        
+        
+        if(TurnLeft){
+            X=X-LRsens
+            X=$X*-LRsens+X
+            
+        }
+    elseif(TurnRight){
+            X=X+LRsens
+            X=$X*LRsens+X
+        }
+    else{
+    }
+    
+    if(HardRight)
+    {
+    X=X+LRsensH
+    X=$X*LRsensH+X
+    }
+    elseif(HardLeft)
+    {
+    X=X-LRsensH
+    X=$X*-LRsensH+X
+    }
+    else{
+    }
+    
+
+    
+        if    (Tdist < 500  ){Deploy=1 Close=Tdist W=0
+              if(Tdist < Close){
+            S=1 W=0  Deploy=TRUE
+        }
+    }
+    else{Deploy=0 S=0 W=1}
+        interval(32)
+        return
+    }
+
+function main() {
+    if(Bsr<50)
+    {
+        W=0
+        Steer=1
+        timer("settle",2000)
+    }
+    if(Bsl<50)
+    {
+        W=0
+        Steer=1
+        timer("settle",2000)
+    }
+    if(clk("settle"))
+    {
+        W=0
+        Steer=0
+    }
+    
+    
+    if (clk()) {
+    Dang = Hip:bearing(AimPos)
+    Fang = Torso:elevation(AimPos)
+    #Dang = entity():bearing(AimPos)
+    #Fang = entity():elevation(AimPos)    
+    Tdist= Targ:pos():distance(entity():pos())
+    Ang = entity():angles()
+    if(R1==1&R2==1&R3==1){Ready=1}
+    if(R1==0&&R2==0&&R3==0){Ready=0}
+    if(Batter){
+        ReloadRockets=0
+        Timer++
+        
+         if(Timer==50&&Batter&&R1){
+            M1=1
+            M3=0
+            Timer++
+        }
+        if(Timer==100&&Batter&&R2){
+            M1=0
+            M2=1
+            Timer++
+        }
+        if(Timer==150&&Batter&&R3){
+            M3=1
+            M2=0
+            Timer++
+            timer("m2",800)
+        }
+        if(Timer>450){Timer=0}
+    }
+    else{M1=0 M2=0 M3=0
+        Timer=0
+        ReloadRockets=1}
+    if(Target && Tdist>10){
+        persue()
+    }
+    
+    if(Facing&&Lookin&&R1&&R2&&R3&&Tdist<=6500){
+    Raise=1}
+    else{
+        Raise=0}
+      
+       
+     
+    if (~Enable) {
+        if (Enable) {
+            interval(32)
+        } else {
+            stoptimer("interval")
+        }
+        
+    }
+}
+}
+main()
