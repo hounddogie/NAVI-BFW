@@ -8,8 +8,8 @@
     HipMDL = "models/hunter/blocks/cube2x4x1.mdl"
     FootMDL = "models/phxtended/tri2x1x1solid.mdl"
 ]#
-@inputs Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
-@outputs Steer ReloadRockets TurnLeft TurnRight Ang:angle Deploy W Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight
+@inputs Hip:entity Torso:entity Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
+@outputs Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
 @persist Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob UDsens LRsens UDsensH  LRsensH
 @trigger Enable 
 if(first()){
@@ -109,7 +109,7 @@ function persue() {
        elseif(TurnDown){
             Y=Y-UDsens
             Y=$Y*-UDsens+Y
-            
+        }
             if(Y<DownLimit){
                 Y=DownLimit
             }
@@ -125,7 +125,7 @@ function persue() {
     elseif(TurnRight){
             X=X+LRsens
             X=$X*LRsens+X
-}
+        }
     else{
     }
     
@@ -142,10 +142,14 @@ function persue() {
     else{
     }
     
-}
+
     
-#[         if (Tdist <10){Deploy=1 #[W=0}
-            else{Deploy=0 #[W=1]}]#
+        if    (Tdist < 500  ){Deploy=1 Close=Tdist W=0
+              if(Tdist < Close){
+            S=1 W=0  Deploy=TRUE
+        }
+    }
+    else{Deploy=0 S=0 W=1}
         interval(32)
         return
     }
@@ -153,13 +157,13 @@ function persue() {
 function main() {
     if(Bsr<50)
     {
-        W=1
+        W=0
         Steer=1
         timer("settle",2000)
     }
     if(Bsl<50)
     {
-        W=1
+        W=0
         Steer=1
         timer("settle",2000)
     }
@@ -171,8 +175,10 @@ function main() {
     
     
     if (clk()) {
-    Dang = entity():bearing(AimPos)
-    Fang = entity():elevation(AimPos)    
+    Dang = Hip:bearing(AimPos)
+    Fang = Torso:elevation(AimPos)
+    #Dang = entity():bearing(AimPos)
+    #Fang = entity():elevation(AimPos)    
     Tdist= Targ:pos():distance(entity():pos())
     Ang = entity():angles()
     if(R1==1&R2==1&R3==1){Ready=1}
