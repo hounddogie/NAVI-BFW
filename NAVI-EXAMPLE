@@ -1,0 +1,165 @@
+@name NAVI
+#[  This is an old version of NAVI that was labelled entirely to help others understand it and what most of it does
+]#
+@inputs Begin R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector #[ Pos to aim at]#  Bsr Bsl W
+@outputs Interupt Git ReloadRockets TurnLeft TurnRight Ang:angle Deploy  Tdist M1 M2 M3 Timer No Raise Facing AimPos:vector Steer  #[Bsr Bsl ]# First
+@persist Tdist Persue Dang Timer Facing NO BSENABLE
+@trigger Enable 
+ if(first() | duped()) {
+  First=1
+}
+
+interval(1)
+BSENABLE=0 #wall detection enable?
+function persue() {     
+    if(!Targ:isAlive()){
+            timer("do_a_thing", 10)
+            NO=1
+            
+     if(clk("do_a_thing")) {
+    #STUFF IS DONE HERE
+     if(NO){
+            timer("do_a_thing", 10)
+            No=1
+           }
+                           }
+                        else{No=0}
+}
+else{
+    NO=0
+    No=0
+}
+if(BSENABLE){
+if(Bsr<75)#ranger left "backup sensor left"
+{
+        Interupt=1 #this var interrupts the mech's normal guidance to do something it normally wouldnt do,
+        Git=-1 #GIT is appalachian term for GO! if Git is 1 mech forward if -1 mech backwards
+        TurnRight=0 #turn to rotate the mech a little while it reverses so the mech wont hit the wall again
+        TurnLeft=1
+        timer("settle",2500)     
+}
+elseif(Bsl<75)#ranger right "backup sensor right"
+{
+        Interupt=1
+        Git=-1
+        TurnRight=1
+        TurnLeft=0
+        timer("settle",2500)
+}
+    
+}
+
+    
+        if (Interupt==0&Dang > 0.3) {
+            TurnRight = 1
+            TurnLeft = 0
+            Facing=0
+            Straight=0
+            
+        }
+        elseif (Interupt==0&Dang < -0.3) {
+            TurnRight = 0
+            TurnLeft = 1
+            Facing=0
+            Straight=0
+            
+        }
+        else {
+           Straight=1 # (see A)
+            Facing=1#this is a variable to let mech know that its facing said target for missiles
+            
+            
+        }
+      
+         if (Tdist <400){Deploy=1 Git=0} #PLOP DOWN AND BECOME BASTION (for particular mech modelllls (shhh quiet bout this)
+            else{Deploy=0 W=1} #get back up ]#
+        interval(32)
+        return
+    }
+
+function main() {
+#[    if(Begin){persue()}
+    else{W=0}]#
+  
+    if (clk())
+    {    persue()
+        if(W&Interupt==0){#for input if you wanna tell the mech to move (enable it to move in other words)
+        Git=1
+    }
+    elseif(Interupt){}
+    else{Git=0}
+    
+   
+    
+       if(Interupt==0&Straight) 
+        {
+        TurnRight=0
+        TurnLeft=0
+        }   
+    AimPos=Targ:pos() #where the target is
+    Dang = entity():bearing(AimPos) #get the ang 
+    Tdist= Targ:pos():distance(entity():pos()) #targdist
+    Ang = entity():angles() #my ang 
+    if(R1==1&R2==1&R3==1){Ready=1}#missile stuff
+    if(R1==0&R2==0&R3==0){Ready=0}
+    if(Batter){
+        ReloadRockets=0
+        Timer++
+        
+         if(Timer==50&Batter&R1){
+            M1=1
+            M3=0
+            Timer++
+        }
+        if(Timer==100&Batter&R2){
+            M1=0
+            M2=1
+            Timer++
+        }
+        if(Timer==150&Batter&R3){
+            M3=1
+            M2=0
+            Timer++
+            timer("m2",800)
+        }
+        if(Timer>450){Timer=0}
+    } 
+    else{M1=0 M2=0 M3=0
+        Timer=0
+        ReloadRockets=1}#ed rocket stufffff
+    if(Target & Tdist<300){                                               #|
+    Git=0}
+    else{Git}
+     #stop if im close enough to target                                 |
+    
+    if(Facing&R1&R2&R3&Tdist<=6500){#missile stuff
+    Raise=1
+    }
+    else{
+        Raise=0
+        }
+      #end missile stuff
+       
+     #sequencing crap cake did is below
+    if (~Enable) {
+        if (Enable) {
+            interval(32)
+        } else {
+            stoptimer("interval")
+        }
+        
+    }
+}
+}
+interval(32)
+main()
+#your timer fix (untested)(Katsu) *said timers have trouble being called from inside a func*
+
+ if(clk("settle"))# this is a timer to tell the length of a given sequence, when timer runs out, the mech rusumes normal guidance
+    {
+       #dumb stuff i tried to fix the bug with  
+        Interupt=0
+        
+        TurnRight=0
+        TurnLeft=0
+    }
