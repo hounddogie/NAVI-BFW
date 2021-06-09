@@ -1,0 +1,63 @@
+@name NAVI Data infrastructure
+@inputs [E1 E2 E3 E4 E5 E6 E7 E8 E9 E10 E11 E12 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12]:entity
+@outputs 
+@persist 
+@trigger 
+
+if(!E1:isFrozen()){
+    E1:propFreeze(1)
+    E2:propFreeze(1)
+    E3:propFreeze(1)
+    E4:propFreeze(1)
+    E5:propFreeze(1)
+    E6:propFreeze(1)
+    E7:propFreeze(1)
+    E8:propFreeze(1)
+    E9:propFreeze(1)
+    E10:propFreeze(1)
+    E11:propFreeze(1)
+    E12:propFreeze(1)
+}
+#[if(first()){
+    E1:propFreeze(1)
+    E2:propFreeze(1)
+    E3:propFreeze(1)
+    E4:propFreeze(1)
+    E5:propFreeze(1)
+    E6:propFreeze(1)
+    E7:propFreeze(1)
+    E8:propFreeze(1)
+}]#
+
+runOnTick(1)
+E1:setPos(B1:pos())
+E2:setPos(B2:pos())
+E3:setPos(B3:pos())
+E4:setPos(B4:pos())
+E5:setPos(B5:pos())
+E6:setPos(B6:pos())
+E7:setPos(B7:pos())
+E8:setPos(B8:pos())
+E9:setPos(B9:pos())
+E10:setPos(B10:pos())
+E11:setPos(B11:pos())
+E12:setPos(B12:pos())
+#[
+E1:setAng(B1:angles())
+E2:setAng(B2:angles())
+E3:setAng(B3:angles())
+E4:setAng(B4:angles())
+E5:setAng(B5:angles())
+E6:setAng(B6:angles())
+E7:setAng(B7:angles())
+E8:setAng(B8:angles())
+E9:setAng(B9:angles())
+E10:setAng(B10:angles())
+E11:setAng(B11:angles())
+E12:setAng(B12:angles())
+]#
+
+#above is just the basic code to freeze all the data transmitters in place so they may be manipulated...
+#needs control script added in
+
+
