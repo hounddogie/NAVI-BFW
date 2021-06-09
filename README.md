@@ -7,6 +7,8 @@ Overview.
 
 NAVI is used to integrate navigation in all ranges of appliances.
 The main focus of NAVI is strategic combat.
+It is mostly a game. it adds strategy to acf combat and gives a challenge to those with ACF.
+Its like nextbot but with BFW v5 mechs.
 
 Once implemented, the chip will assess the appliance it is in by characteristics defined (Such as a role)
 as well as parameters assessed (physical aspects) and use them for decision making.
