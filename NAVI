@@ -19,105 +19,106 @@ if(first()){
     holoModel(1,"models/sprops/misc/axis_plane.mdl")
     
     TRUE=1
-    FALSE=0
-    UDsens=2
-    LRsens=2
-    UDsensH=15
-    LRsensH=15
-    UpLimit=45
-    DownLimit=-45
-
+    FALSE=0# why would you ever change these
+    
 }
-interval(1)
-function persue() {     
-         if (Dang < -2.0) {
-            HardRight   = 0
-            HardLeft    = 0
-            Facing      = 0
-            TurnRight   = 0
-            TurnLeft    = 1
+interval(32)
+function persue() {
+TRUE=1
+FALSE=0
+UDsens=2 #u/d sensitivity
+LRsens=2
+UDsensH=9#15 #hard turn has an H
+LRsensH=9#15
+UpLimit=45 #I tried making soft limit for bfw head turning
+DownLimit=-45
+Close = 500 #how much personal space to give our target
+    
+        if (Dang < -2.0) 
+            {  #am turn left
+            HardRight   = FALSE
+            HardLeft    = FALSE
+            Facing      = FALSE
+            TurnRight   = FALSE
+            TurnLeft    = TRUE
+            Steer       = -0.5
+        if (Dang < -15.0) #am turn super left
+            {
+            HardLeft    = TurnLeft #good coding practice here, its a hard left
             Steer       =-1
-            if (Dang < -15.0) {
-           
-            HardRight   = 0
-            HardLeft    = TurnLeft
-            Steer       =-1
-        }
-        else{TurnRight   = 0
-            TurnLeft    = 0    
-            HardRight   = 0
-            HardLeft    = 0
-            Steer       = 0
             }
         }
-        if (Dang > 2.0)  {
-            Facing      = 0 
-            TurnRight   = 1 
-            TurnLeft    = 0
-            HardRight   = 0
-            HardLeft    = 0
-            Steer       = 1
-        if      (Dang > 15.0) {
-            HardRight   = TurnRight
-                
-            Steer       =1
-        }
-        else{
-            TurnRight   = 0
-            TurnLeft    = 0    
-            HardRight   = 0
-            HardLeft    = 0
-            Steer       = 0
+
+        
+        if (Dang > 2.0)  
+        { #same as above but right instead of left
+            Facing      = FALSE 
+            TurnRight   = TRUE
+            TurnLeft    = FALSE
+            HardRight   = FALSE
+            HardLeft    = FALSE
+            Steer       = 0.5
+            if (Dang > 15.0) 
+            {
+            
+            HardRight   = TurnRight    
+            Steer       = TRUE
             }
-        
-        }
-        
-        if(Dang>=-2&&Dang<=2) {
-            Facing      = 1
-            TurnRight   = 0
-            TurnLeft    = 0    
-            HardRight   = 0
-            HardLeft    = 0
-            Steer       = 0
         }
             
-        if (Fang > 1.0) {
-            TurnUp      = 1
-            TurnDown    = 0
-            Lookin      = 0
-            Bob=Bob*1.5
+        
+        if(Dang>=-2&&Dang<=2) 
+        { #Hey im going straight at the thing!
+            Facing      = TRUE
+            TurnRight   = FALSE
+            TurnLeft    = FALSE    
+            HardRight   = FALSE
+            HardLeft    = FALSE
+            Steer       = FALSE
         }
-        elseif (Fang < -1.0) {
-            TurnUp      = 0
-            TurnDown    = 1
-            Lookin      = 0
-            Bob=Bob/1.5
+            
+        if (Fang > 1.0) 
+        {
+            TurnUp      = TRUE
+            TurnDown    = FALSE
+            Lookin      = FALSE
         }
-        else {
-            Lookin      = 1
-            TurnUp      = 0
-            TurnDown    = 0
-#[            Bob=Bob]#
+        elseif (Fang < -1.0) 
+        {
+            TurnUp      = FALSE
+            TurnDown    = TRUE
+            Lookin      = FALSE
         }
-        if(TurnUp){
+        else 
+        {
+            Lookin      = TRUE
+            TurnUp      = FALSE
+            TurnDown    = FALSE
+        }
+        if(TurnUp)
+        {
             Y=Y+UDsens
-            Y=$Y*UDsens+Y
-            
-            if(Y>UpLimit){
-                Y=UpLimit
+            Y=$Y*UDsens+Y#dont ask me later, its a sort of smoother :v
+        }
+        if(Y>UpLimit)
+            {
+            Y=UpLimit#that soft quota for the head
             }
-       elseif(TurnDown){
+        
+       elseif(TurnDown)
+            {
             Y=Y-UDsens
             Y=$Y*-UDsens+Y
-        }
-            if(Y<DownLimit){
-                Y=DownLimit
             }
-        }
-        else{}
+            if(Y<DownLimit)
+            {
+            Y=DownLimit
+            }
         
         
-        if(TurnLeft){
+        
+        
+    if(TurnLeft){
             X=X-LRsens
             X=$X*-LRsens+X
             
@@ -128,33 +129,54 @@ function persue() {
         }
     else{
     }
-    
     if(HardRight)
-    {
-    X=X+LRsensH
-    X=$X*LRsensH+X
-    }
-    elseif(HardLeft)
-    {
-    X=X-LRsensH
-    X=$X*-LRsensH+X
-    }
-    else{
-    }
-    
-
-    
-        if    (Tdist < 500  ){Deploy=1 Close=Tdist W=0
-              if(Tdist < Close){
-            S=1 W=0  Deploy=TRUE
+        {
+        X=X+LRsensH
+        X=$X*LRsensH+X
         }
-    }
-    else{Deploy=0 S=0 W=1}
-        interval(32)
-        return
-    }
+    elseif(HardLeft)
+        {
+        X=X-LRsensH
+        X=$X*-LRsensH+X
+        }
+    else{
+        }
+    
 
-function main() {
+    #I don't remember my logic behind this but it works and looks like
+    #I probably did this for an interesting reason... no, actually im commenting one for now.. ill see about it later
+#[        if(Tdist < 500  )
+        {
+        Deploy=1 
+        Close=Tdist 
+        W=0
+        }]#
+        if(Tdist < Close)
+        { #woah too close, backin up'
+             S      =    TRUE
+             W      =    FALSE
+             Deploy =    TRUE
+        }
+     ####################################   
+    
+    else{
+        Deploy=FALSE
+        S=     FALSE
+        W=     TRUE
+   }
+
+        return
+}
+
+function main() {#moving this here cus i think it would be better outside the clk
+    if (~Enable) {
+        if (Enable) {
+            interval(32)
+        } else {
+            stoptimer("interval")
+        }
+        
+    }
     if(Bsr<50)
     {
         W=0
@@ -208,7 +230,7 @@ function main() {
     else{M1=0 M2=0 M3=0
         Timer=0
         ReloadRockets=1}
-    if(Target && Tdist>10){
+    if(Target && Tdist>Close){
         persue()
     }
     
@@ -219,14 +241,14 @@ function main() {
       
        
      
-    if (~Enable) {
+#[    if (~Enable) {
         if (Enable) {
             interval(32)
         } else {
             stoptimer("interval")
         }
         
-    }
+    }]#
 }
 }
 main()
