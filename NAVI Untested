@@ -144,9 +144,9 @@ Close = 500 #how much personal space to give our target
     #I probably did this for an interesting reason... no, actually im commenting one for now.. ill see about it later
 #[        if(Tdist < 500  )
         {
-        Deploy=1 
+        Deploy = TRUE 
         Close=Tdist 
-        W=0
+        W = FALSE
         }]#
         if(Tdist < Close)
         { #woah too close, backin up'
@@ -182,7 +182,7 @@ function idManagement()
             }
             else
             {
-             ID++   
+             ID++
             }
         
     }
@@ -198,19 +198,19 @@ function main() {#moving this here cus i think it would be better outside the cl
     }
     if(Bsr<50)
     {
-        W=0
+        W = FALSE
         Steer=1
         timer("settle",2000)
     }
     if(Bsl<50)
     {
-        W=0
+        W = FALSE
         Steer=1
         timer("settle",2000)
     }
     if(clk("settle"))
     {
-        W=0
+        W = FALSE
         Steer=0
     }
     
