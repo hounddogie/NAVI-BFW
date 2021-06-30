@@ -11,14 +11,17 @@
 @inputs Hip:entity Torso:entity Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
 @outputs Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
 @persist Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob UDsens LRsens UDsensH  LRsensH
+@persist T Scan ID TRUE FALSE
 @trigger Enable 
 if(first()){
     holoCreate(1)
     holoAng(1,entity():angles())
     holoParent(1,entity())
     holoModel(1,"models/sprops/misc/axis_plane.mdl")
-    
+  
+Scan=100
     TRUE=1
+   
     FALSE=0# why would you ever change these
     function persue() {
 TRUE=1
@@ -164,38 +167,105 @@ Close = 500 #how much personal space to give our target
 
         return
 }
-function idManagement()
+function void idManagement()
 {
+    print("IDmanage#"+Scan)
+ 
+#[    T=T+Clk]#
        Master = gGetEnt("Captain")
-    if( !Master#[ | ( Master == entity() ) ]#)
+    
+    if( !Master|Master == entity() )
     {
         IsMaster = 1
         print("Look at me, I am the captain now.")
         gSetEnt("Captain",entity())
-        ID=0
     
-        Whomst=gGetEnt("Bot#"+ID:toString())
-        if(!Whomst)
+        ID=1
+        Allgud=1
+    }
+    if(IsMaster)
+    {
+        Scan=0
+    }
+   #[ elseif(!Allgud)
+        {]#
+           
+           
+    Whomst=gGetEnt("Bot#"+ID:toString())
+    if(!Whomst|entity()==Whomst&!IsMaster)
+    {
+         gSetEnt("Bot#"+ID:toString(),entity())
+         
+#[                Scan=0]#
+         print(gGetEnt("Bot#"+ID:toString()):toString()+" is now slave: Bot#"+ID:toString())
+         Allgud=1
+    }  
+           #[ elseif(Scan==0&Allgud==1)
             {
-             gSetEnt("Bot#"+ID:toString(),entity())
-            print("Bot#"+ID:toString()+"Status: Yes Masah!")
-            }
+                
+                return void
+                print("endscan co-routine")
+               
+            }]#
             else
             {
-             ID++
+                print("Bot#"+ID+" exists, hi slave :v")
+                ID=ID+1
+                Scan--
+                print("scanning "+ID)
             }
+           if(IsMaster)
+        {
+             print("endscan co-routine")
+            return void
+               
+        }
+         
+    }   
         
+
+    
+    
+
+    
+#[    {
+        Whomst=gGetEnt("Bot#"+ID:toString())
+        StartScan==100
     }
-}
-function main() {#moving this here cus i think it would be better outside the clk
-    if (~Enable) {
+    if(StartScan>1&!Whomst)
+    {]#
+        
+        
+    
+    
+    
+      #[  if(IsMaster)
+        {}
+        elseif(T<200&&!Whomst)
+            {
+                
+             gSetEnt("Bot#"+ID:toString(),entity())
+            print("Bot#"+ID:toString()+"Status: Yes Masah!")
+            
+            }
+            else
+            {print("Already have a bot#"+ID+" , moving up")
+                
+             ID=ID+1
+           
+            }]#
+        
+    
+
+function void main(){#moving this here cus i think it would be better outside the clk
+#[    if (~Enable) {
         if (Enable) {
             interval(32)
         } else {
             stoptimer("interval")
         }
         
-    }
+    }]#
     if(Bsr<50)
     {
         W = FALSE
@@ -215,13 +285,21 @@ function main() {#moving this here cus i think it would be better outside the cl
     }
     
     
-    if (clk()) {
+   if(Hip&Torso)
+{
     Dang = Hip:bearing(AimPos)
     Fang = Torso:elevation(AimPos)
-    #Dang = entity():bearing(AimPos)
-    #Fang = entity():elevation(AimPos)    
+}
+else
+{
+    Dang = entity():bearing(AimPos)
+    Fang = entity():elevation(AimPos)
+}    
+if(Targ)
+{
     Tdist= Targ:pos():distance(entity():pos())
-    Ang = entity():angles()
+}
+#    Ang = entity():angles()   Wait why is this here
     if(R1==1&R2==1&R3==1){Ready=1}
     if(R1==0&&R2==0&&R3==0){Ready=0}
     if(Batter){
@@ -268,7 +346,7 @@ function main() {#moving this here cus i think it would be better outside the cl
         }
         
     }]#
-}
+
 }
 }
 interval(32)
