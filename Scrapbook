@@ -1,5 +1,5 @@
 ----------------------
-Beacon networking
+DEPRICATED
 ----------------------
 More on the beacon's behaviors.
 The beacons work in a hybrid ring/mesh topology with 4 nodes.
@@ -21,12 +21,13 @@ of sight communication. Save that for when we establish a communication protocol
 ----------------------
 Mech behaviour
 ----------------------
-
-
+Currently navi is raw navigation and only walks to target and throws triggers at difinable ranges and conditions such as when facing, and when at X distance away
 
 ----------------------
 Mech roles
 ----------------------
+
+
 ----------------------
 NAVI commanding functions
 ----------------------
@@ -36,7 +37,7 @@ NAVI commanding functions
 ----------------------
 NAVI comms protocol
 ----------------------
-
+Navi will use datasignals, more on this when it becomes prevalent
 
 
 
