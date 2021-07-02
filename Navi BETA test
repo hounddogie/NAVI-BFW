@@ -1,0 +1,364 @@
+@name NAVI BFW-official
+@inputs Hip:entity Torso:entity #alignment
+@inputs  Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
+@outputs Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
+@persist Rocketpodspeed Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob 
+@persist T TRUE FALSE 
+@persist UDsens LRsens UDsensH  LRsensH
+@persist UpLimit DownLimit Close
+@persist Master:entity CreationTime
+@trigger Enable
+
+
+# if(duped())
+# {
+    # reset()
+# }
+
+if(first())
+{   
+ 
+   
+    TRUE=1
+    FALSE=0# why would you ever change these
+    UDsens=2 #u/d sensitivity
+    LRsens=2
+    UDsensH=9#15 #hard turn has an H
+    LRsensH=9#15
+    UpLimit=45 #I tried making soft limit for bfw head turning
+    DownLimit=-45
+    Close = 500 #how much personal space to give our target
+    CreationTime = systime()
+##############################
+#Dunnah toucheh this
+    holoCreate(1)
+    holoAng(1,entity():angles())
+    holoParent(1,entity())
+    holoModel(1,"models/sprops/misc/axis_plane.mdl")
+    
+    dsJoinGroup(owner():steamID()+"NAVI_BFW") # incase multiple people on the server are using this same e2
+	dsSetScope(10) 
+
+##############################
+    
+    function number clk_(Millis_:number, Go_:number) # oooooooooooo clock
+	{
+		local TimerName = Millis_:toString()
+		if(clk(TimerName))
+		{
+			return 1
+		}
+		elseif(Go_)
+		{
+			timer(TimerName, Millis_)
+			return 0
+		}
+	}
+	
+	
+    function follow(Follow_) 
+	{
+        
+		if(clk_(50,Follow_)) #how do I turn B0ss?
+		{
+		
+			if(Dang < -2.0)
+			{  #am turn left
+				HardRight   = FALSE
+				HardLeft    = FALSE
+				Facing      = FALSE
+				TurnRight   = FALSE
+				TurnLeft    = TRUE
+				Steer       = -0.5
+            }
+            if(Dang < -15.0)
+			{ #am turn super left
+                HardLeft    = TurnLeft #good coding practice here, its a hard left
+                Steer       = -1
+            }
+		
+
+        
+			if(Dang > 2.0)
+			{ #same as above but right instead of left
+				Facing      = FALSE 
+				TurnRight   = TRUE
+				TurnLeft    = FALSE
+				HardRight   = FALSE
+				HardLeft    = FALSE
+				Steer       = 0.5
+            
+				if (Dang > 15.0)
+				{            
+					HardRight   = TurnRight    
+					Steer       = TRUE
+				}
+			}
+			if(Dang>=-2&&Dang<=2)
+			{ #Hey im going straight at the thing!
+				Facing      = TRUE
+				TurnRight   = FALSE
+				TurnLeft    = FALSE    
+				HardRight   = FALSE
+				HardLeft    = FALSE
+				Steer       = FALSE
+			}
+            
+			if(Fang > 1.0)
+			{
+				TurnUp      = TRUE
+				TurnDown    = FALSE
+				Lookin      = FALSE
+			}
+			elseif(Fang < -1.0)
+			{
+				TurnUp      = FALSE
+				TurnDown    = TRUE
+				Lookin      = FALSE
+			}
+			else
+			{
+				Lookin      = TRUE
+				TurnUp      = FALSE
+				TurnDown    = FALSE
+			}
+        
+			if(TurnUp)
+			{
+				Y=Y+UDsens
+				Y=$Y*UDsens+Y#dont ask me later, its a sort of smoother :v
+			}
+        
+			if(Y>UpLimit)
+			{
+				Y=UpLimit#that soft quota for the head
+			}
+			elseif(TurnDown)
+			{
+				Y=Y-UDsens
+				Y=$Y*-UDsens+Y
+			}
+        
+			if(Y<DownLimit)
+			{
+				Y=DownLimit
+			}
+        
+			if(TurnLeft)
+			{
+				X=X-LRsens
+				X=$X*-LRsens+X 
+			}
+			elseif(TurnRight)
+			{
+				X=X+LRsens
+				X=$X*LRsens+X
+			}
+			else
+			{
+			}       
+			if(HardRight)
+			{
+				X=X+LRsensH
+				X=$X*LRsensH+X
+			}
+			elseif(HardLeft)
+			{
+				X=X-LRsensH
+				X=$X*-LRsensH+X
+			}
+			else
+			{}
+		}        
+        if(Tdist < Close)
+		{ #woah too close, backin up'
+            S      =    TRUE
+            W      =    FALSE
+            Deploy =    TRUE
+        
+    
+    
+        }
+		else#oi, get back here
+		{
+            Deploy = FALSE
+            S      = FALSE
+            W      = TRUE
+        }
+
+        return
+    }
+	function void obstacleAvoidance(Avoid_)
+	{
+		if(clk_(20,Avoid_))
+		{
+			if(Bsr<50)
+			{
+				W = FALSE
+				Steer=1
+				timer("settle",2000)
+			}
+        
+			if(Bsl<50)
+			{	
+				W = FALSE
+				Steer=1
+				timer("settle",2000)
+			}        
+			if(clk("settle"))
+			{
+				W = FALSE
+				Steer=0
+			}
+		}
+	}
+    function void rocketLogic(Dothelogics_))
+	{
+		if(clk_(Rocketpodspeed,Dothelogics_))#Podspeed you magnificent rocket
+		{	###force the launching of rockets
+			if(Batter)
+			{
+				ReloadRockets=0
+				Timer++
+            }
+            if(Timer==50&&Batter&&R1)
+			{
+                M1=1
+                M3=0
+                Timer++
+            }
+            if(Timer==100&&Batter&&R2)
+			{
+                M1=0
+                M2=1
+                Timer++
+            }
+            if(Timer==150&&Batter&&R3)
+			{
+                M3=1
+                M2=0
+                Timer++
+                timer("m2",800)
+            }
+            if(Timer>450)
+			{
+                Timer=0
+            }
+			if(R1==1&R2==1&R3==1)#if all rockets reload, 
+			{
+				Ready=1
+			}
+			if(R1==0&&R2==0&&R3==0)
+			{
+				Ready=0
+			}
+		
+			else
+			{
+        
+				M1=0 
+				M2=0 
+				M3=0
+				Timer=0
+				ReloadRockets=1
+            }
+			if(R1==0&&R2==0&&R3==0)
+			{
+            Ready=0
+			}
+        
+			else
+			{
+				M1=0 
+				M2=0 
+				M3=0
+				Timer=0
+				ReloadRockets=1
+            
+			}
+			if(Facing&&Lookin&&R1&&R2&&R3&&Tdist<=6500)
+			{
+				Raise=1
+			}
+			else
+			{
+				Raise=0
+            }
+		}
+	}
+    function void idManagement()
+	{
+        local Time = systime() 
+        if(!Master:isValid())
+		{
+            if(first())
+			{ #request status at start
+                dsSend("leader_check",owner():steamID()+"NAVI_BFW",1)
+                
+            }
+			elseif(Time - CreationTime >= 0.5)
+			{ #if no one replies in 0.5 second, become master chip and alert any other spawned chips
+                Master = entity() 
+                dsSend("i_am",owner():steamID()+"NAVI_BFW",entity())
+                print(entity():id() + " becoming master chip")
+            }
+        }
+        
+        if(dsClk("i_am"))
+		{ #receiving who the master chip is
+            local IncomingData = dsGetEntity()
+            
+            if(Master:isValid())
+			{
+                if(IncomingData != Master)
+				{
+                    #[
+                        uh oh, multiple chips were spawned at once with no master
+                     ]#
+                    error("multiple chips spawned at the exact same time. master/slave system confused. spawn 1 master first before doing this")
+                }
+            }
+			else
+			{
+                #chip needs master, found it.
+                Master = dsGetEntity()          
+                print("chip " + entity():id() + " swearing loyalty to " + Master:id())      
+            }
+        }
+        
+        if(dsClk("leader_check") & Master == entity())
+		{ #if this chip is the master chip, tell them whats up
+            dsSend("i_am",owner():steamID()+"NAVI_BFW",entity())
+        }
+    }
+    
+    function void think()
+	{
+		if(Hip&Torso)
+		{
+			Dang = Hip:bearing(AimPos)
+			Fang = Torso:elevation(AimPos)
+		}
+		else
+		{
+			Dang = entity():bearing(AimPos)
+			Fang = entity():elevation(AimPos)
+		}   
+		if(Targ)
+		{
+			Tdist= Targ:pos():distance(entity():pos())
+		}
+        
+        #Ang = entity():angles()   Wait why is this here
+    
+       
+        
+        
+		
+    }
+}
+
+interval(32)
+
+idManagement()
+main()
