@@ -8,7 +8,7 @@ Overview.
 NAVI is used to integrate navigation in all ranges of appliances.
 The main focus of NAVI is strategic combat.
 It is mostly a game. it adds strategy to acf combat and gives a challenge to those with ACF.
-Its like nextbot but with BFW v5 mechs.
+Its like nextbot but with BFW v5 mechs, other mechs, and simphys cars too..
 
 Once implemented, the chip will assess the appliance it is in by characteristics defined (Such as a role)
 as well as parameters assessed (physical aspects) and use them for decision making.
@@ -20,8 +20,8 @@ Everything will be fully autonomous.
 The mechs will use 4 "beacons" to communicate via relay satelites mounted on the mechs like turrets.
 These allow more strategic weakpoints.
 
-The beacons will be relay towers using wire satelite dishes.
-The beacons will use means of two way radio to sync location so that the mechs may point their data transferrers to the dishes to sync info
+The server will be a pod that deploys when dropped and enables the mechs to communicate over long distances
+
 No doubt this will take another e2 script to manage data transfer.
 
 The point of this is to have a good combat environment for players to try crazy acf builds on.
@@ -32,8 +32,8 @@ will have to work on their own which can lead to vulnerabilities.
 more on roles:
 
 ------beaconboy-----
-initially the beacons will not be in place. a robot will drop these beacons on 4 points of the map
-this will also add some interesting aspects to combat. If you are able to kill the beaconboy before he deploys his beacons it will be a great start in battle
+initially the server will not be in place. a robot will drop the server in a seemingly good place.
+this will also add some interesting aspects to combat. If you are able to kill the beaconboy before he deploys his server it will be a great start in battle
 since you have prevented the beacons from being deployed, you have separated the mechs from their pack opening vulnerabilities.
 
 ------Master--------
@@ -58,7 +58,6 @@ Maybe in the form of a function() that sends the data value
 The goal for this task is to make a command that encodes an entire command
 in a single data value and can be decoded. must be able to be sent thru wire number output.
 
-Make beacon relay infrastructure that is capable of routing these requests using a network of 
-(setang'd and setpos'd) gimbal aimed wire data transferrers
+Make beacon relay infrastructure that is capable of letting them communicate via a "serial" connection
 
 Build a beacon. 
