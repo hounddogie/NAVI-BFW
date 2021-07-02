@@ -1,16 +1,6 @@
 @name NAVI BFW-official
-
-#[  Outputs wether to turn left or right
-    in order to be bearing at the given
-    position.
-    
-    
-     TorsoMDL = "models/hunter/blocks/cube2x2x1.mdl"
-    HipMDL = "models/hunter/blocks/cube2x4x1.mdl"
-    FootMDL = "models/phxtended/tri2x1x1solid.mdl"
-]#
-
-@inputs Hip:entity Torso:entity Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
+@inputs Hip:entity Torso:entity #alignment
+@inputs  Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
 @outputs Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
 @persist Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob UDsens LRsens UDsensH  LRsensH
 @persist T Scan ID TRUE FALSE Thatshimofficer 
@@ -249,7 +239,7 @@ if(first()){
         if(R1==0&&R2==0&&R3==0){
             Ready=0
         }
-        
+        ###force the launching of rockets
         if(Batter){
             ReloadRockets=0
             Timer++
