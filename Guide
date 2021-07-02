@@ -1,0 +1,31 @@
+The BFW-v5 variant and what is different about it:
+
+BFW-v5 is a mech chip that adds interesting aspects of control to a prop mech.
+Most things will use mouse control for the head (torso) or the A and D key to turn.
+BFW takes a different approach, BFW locks your camera and uses your mouse control to turn the whole mech.
+this also give the mech the ability to strafe with wsad since your mouse handles steering and looking
+This means the input for BFW doesnt take your player's eye angles, aimposition, or direct key input. 
+Instead, an eyepod is connected to it and it feeds data off your mouse movements.
+Eyepods lock your view and then addor subtract to an X and Y number ex: mouse move left> eyepod subtracts X output
+so instead of a vector, angle, or boolean input, bfw takes an X and Y that can go from -100000 and 1000000 and so on
+it takes that raw X and Y input and does some division and translates the values to angles for the hip (X) and angles for the torso (Y)
+Nav-BFW uses bearing and such to make the mech aim by incrementing and decrementing the X and Y just like the eye pod.
+
+Requirements for use:
+Anything that accepts WSAD control and has inputs for them (Yes NAVI BFW still does output bassic wsad and 0-1 turning)
+Navi chip
+A target
+
+
+
+to use navi, you must wire the outputs to a BFW mech's chip
+x to x
+y to y
+aimpos must have a coordinate (where the mech will walk to)
+Target must have a boolean value of 1 to activate NAVI
+W must goto Forward (W can be made negative and will act as both forwards and backwards)
+m1m2m3 can go to rocket pods, they sequence their firing
+reload is to reload rocket pods
+You will also need to feed a target entity to Target[entity] using a target finder
+
+
