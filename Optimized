@@ -1,12 +1,12 @@
 @name NAVI BFW-official
 @inputs Hip:entity Torso:entity #alignment
 @inputs  Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]#
-@outputs Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
+@outputs Sx Sy SlaveE2s:array Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
 @persist Rocketpodspeed Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob
-@persist T TRUE FALSE
+@persist T TRUE FALSE  E:entity
 @persist UDsens LRsens UDsensH  LRsensH X Y
 @persist UpLimit DownLimit Close
-@persist Master:entity CreationTime
+@persist Master:entity SC CreationTime Frm
 @trigger Enable
 # if(duped())
 # {
@@ -14,6 +14,7 @@
 # }
 if(first())
 {
+    E=entity()
     TRUE=1
     FALSE=0# why would you ever change these
     UDsens=2 #u/d sensitivity
@@ -26,10 +27,12 @@ if(first())
     CreationTime = systime()
 ##############################
 #Dunnah toucheh this
-    holoCreate(1)
-    holoAng(1,entity():angles())
-    holoParent(1,entity())
-    holoModel(1,"models/sprops/misc/axis_plane.mdl")
+Sy=FALSE
+Sx=FALSE
+    holoCreate(FALSE)
+    holoAng(FALSE,E:angles())
+    holoParent(FALSE,E)
+    holoModel(FALSE,"models/sprops/misc/axis_plane.mdl")
     dsJoinGroup(owner():steamID()+"NAVI_BFW") # incase multiple people on the server are using this same e2
 	dsSetScope(10)
 ##############################
@@ -38,12 +41,12 @@ if(first())
 		local TimerName = Millis_:toString()
 		if(clk(TimerName))
 		{
-			return 1
+			return TRUE
 		}
 		elseif(Go_)
 		{
 			timer(TimerName, Millis_)
-			return 0
+			return FALSE
 		}
 	}
 	
@@ -86,7 +89,7 @@ if(first())
 		HardLeft    = FALSE
 		Steer       = FALSE
 Deploy=TRUE
-  return 1
+  return TRUE
 	}
 	function look_up(Hard_)
 	{
@@ -123,20 +126,20 @@ Deploy=TRUE
 		
 			if(Dang < -2.0)
 			{  #am walke left
-				goLeft(0)
+				goLeft(FALSE)
             }
             if(Dang < -15.0)
 			{ #am walkeh super left
-				goLeft(1)
+				goLeft(TRUE)
             }
 		
 			if(Dang > 2.0)
 			{
-				goRight(0)
+				goRight(FALSE)
 			}
             if (Dang > 15.0)
 			{
-				goRight(1)
+				goRight(TRUE)
 			}
 			
 			
@@ -146,11 +149,11 @@ Deploy=TRUE
 			}
 			if(Fang > 1.0)
 			{
-				look_up(0)
+				look_up(FALSE)
 			}
 			elseif(Fang < -1.0)
 			{
-				look_down(0)
+				look_down(FALSE)
 			}
 			else
 			{
@@ -202,68 +205,68 @@ Deploy=TRUE
 		{	###force the launching of rockets
 			if(Batter)
 			{
-				ReloadRockets=0
+				ReloadRockets=FALSE
 				Timer++
             }
             if(Timer==50&&Batter&&R1)
 			{
-                M1=1
-                M3=0
+                M1=TRUE
+                M3=FALSE
                 Timer++
             }
             if(Timer==100&&Batter&&R2)
 			{
-                M1=0
-                M2=1
+                M1=FALSE
+                M2=TRUE
                 Timer++
             }
             if(Timer==150&&Batter&&R3)
 			{
-                M3=1
-                M2=0
+                M3=TRUE
+                M2=FALSE
                 Timer++
                 timer("m2",800)
             }
             if(Timer>450)
 			{
-                Timer=0
+                Timer=FALSE
             }
-			if(R1==1&R2==1&R3==1)#if all rockets reload,
+			if(R1==TRUE&R2==TRUE&R3==TRUE)#if all rockets reload,
 			{
-				Ready=1
+				Ready=TRUE
 			}
-			if(R1==0&&R2==0&&R3==0)
+			if(R1==FALSE&&R2==FALSE&&R3==FALSE)
 			{
-				Ready=0
+				Ready=FALSE
 			}
 		
 			else
 			{
-				M1=0
-				M2=0
-				M3=0
-				Timer=0
-				ReloadRockets=1
+				M1=FALSE
+				M2=FALSE
+				M3=FALSE
+				Timer=FALSE
+				ReloadRockets=TRUE
             }
-			if(R1==0&&R2==0&&R3==0)
+			if(R1==FALSE&&R2==FALSE&&R3==FALSE)
 			{
-            Ready=0
+            Ready=FALSE
 			}
 			else
 			{
-				M1=0
-				M2=0
-				M3=0
-				Timer=0
-				ReloadRockets=1
+				M1=FALSE
+				M2=FALSE
+				M3=FALSE
+				Timer=FALSE
+				ReloadRockets=TRUE
 			}
 			if(Facing&&Lookin&&R1&&R2&&R3&&Tdist<=6500)
 			{
-				Raise=1
+				Raise=TRUE
 			}
 			else
 			{
-				Raise=0
+				Raise=FALSE
             }
 		}
 	}
@@ -278,9 +281,9 @@ Deploy=TRUE
             }
 			elseif(Time - CreationTime >= 0.5)
 			{ #if no one replies in 0.5 second, become master chip and alert any other spawned chips
-                Master = entity()
-                dsSend("i_am",owner():steamID()+"NAVI_BFW",entity())
-                print(entity():id() + " becoming master chip")
+                Master = E
+                dsSend("i_am",owner():steamID()+"NAVI_BFW",E)
+                print(E:id() + " becoming master chip")
             }
         }
         if(dsClk("i_am"))
@@ -300,15 +303,15 @@ Deploy=TRUE
 			{
                 #chip needs master, found it.
                 Master = dsGetEntity()
-                print("chip " + entity():id() + " swearing loyalty to " + Master:id())
+                print("chip " + E:id() + " swearing loyalty to " + Master:id())
             }
         }
-        if(dsClk("leader_check") & Master == entity())
+        if(dsClk("leader_check") & Master == E)
 		{ #if this chip is the master chip, tell them whats up
-            dsSend("i_am",owner():steamID()+"NAVI_BFW",entity())
+            dsSend("i_am",owner():steamID()+"NAVI_BFW",E)
         }
-      ################################
-        if(Master == entity()){
+      ################################arrays >_<
+        if(Master == E){
             if(clk_(1000,TRUE)){ #if this chip is the master, compile the list of slave e2s every second
                 SlaveE2s = dsProbe(owner():steamID()+"NAVI_BFW")
                 dsSend("slaveList",owner():steamID()+"NAVI_BFW",SlaveE2s)
@@ -327,17 +330,19 @@ Deploy=TRUE
 	{
 		if(Hip&Torso)
 		{
+    if(Targ){
+        
 			Dang = Hip:bearing(AimPos)
 			Fang = Torso:elevation(AimPos)
 		}
 		else
 		{
-			Dang = entity():bearing(AimPos)
-			Fang = entity():elevation(AimPos)
+			Dang = E:bearing(AimPos)
+			Fang = E:elevation(AimPos)
 		}
 		if(Targ)
 		{
-			Tdist= Targ:pos():distance(entity():pos())
+			Tdist= Targ:pos():distance(E:pos())
 		}
         if(TurnUp)
 		{
@@ -383,11 +388,61 @@ Deploy=TRUE
 		}
 		else
 		{}
-        #Ang = entity():angles()   Wait why is this here
+        #Ang = E:angles()   Wait why is this here
 		
+    }
+}
+function formation()
+    {
+        SC = SlaveE2s:count()
+        
+        if(Master == entity()){
+            local RowSize = 5     
+            
+            local XOffset = 0
+            local XSpacing = 30
+    
+            local YOffset = 0        
+            local YSpacing = 30
+
+            if(changed(SC)){
+                local SCChange = $SC
+                print(SCChange)
+                
+                if(SCChange > 0){ #if we gained       
+                    for(I=1,SC){ #creation of new holos
+                        if(!holoEntity(I):isValid()){
+                            local CleanDivide = int(I/RowSize) == I/RowSize
+                            
+                            local X = CleanDivide ? RowSize - 1 : I % RowSize - 1
+                            local Y = CleanDivide ? I/RowSize - 1 : int(I/RowSize)
+                            
+                            #[
+                            I     1,2,3,4,5, 6,7,8,9,10, 11,12,13,14,15
+                            X      0,1,2,3,4, 0,1,2,3,4,  0, 1, 2, 3, 4
+                            Y      0,0,0,0,0, 1,1,1,1,1,  2, 2, 2, 2, 2
+                            I/X   0.1-1      1.1-2       2.1-3
+                            ]#           
+                            
+                            holoCreate(I)
+                            holoParent(I,entity())
+                            holoPos(I,entity():toWorld(vec(X*XSpacing + XOffset,Y*YSpacing + YOffset,0)))
+                        }
+                    }
+                }else{ #if we lost    
+                    #delete old holos 
+                    for(I=SC+1,SC+abs(SCChange)){
+                        holoDelete(I)
+                    }
+                    
+                }
+            }        
+        }
+        
     }
 }
 interval(32)
 idManagement()
 follow(1)
 think()
+formation()
