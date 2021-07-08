@@ -1,28 +1,34 @@
 @name NAVI BFW-official
 @inputs Hip:entity Torso:entity #alignment
-@inputs  Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]# 
-@outputs Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
-@persist Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob 
-@persist T TRUE FALSE 
-@persist UDsens LRsens UDsensH  LRsensH
+@inputs  Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]#
+@outputs Squadron:array
+@outputs Sx Sy SlaveE2s:array Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
+@persist Rocketpodspeed Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob
+@persist T TRUE FALSE  E:entity
+@persist UDsens LRsens UDsensH  LRsensH X Y
 @persist UpLimit DownLimit Close
-@persist Master:entity CreationTime
+@persist Master:entity SC CreationTime Frm
+@persist Squadron:array SquadStartPos:vector #alternative squad positioning approach
+#[function vector4 squadm8pos(Update_,Index_,Pos_:vector) 
+{
+    if(Update_)
+    {
+        Squadron["Dex"+Index_:toString(),vector]=Pos_
+    }
+    else
+    {
+        return vec4(Index_,Squadron["Dex"+Index_:toString(),vector]:x(),Squadron["Dex"+Index_:toString(),vector]:y(),Squadron["Dex"+Index_:toString(),vector]:z())
+    }
+}]#
 @trigger Enable
-
 # if(duped())
 # {
     # reset()
 # }
-
 if(first())
-{    
-    holoCreate(1)
-    holoAng(1,entity():angles())
-    holoParent(1,entity())
-    holoModel(1,"models/sprops/misc/axis_plane.mdl")
-    
-    dsJoinGroup(owner():steamID()+"NAVI_BFW") # incase multiple people on the server are using this same e2
-	dsSetScope(10)    
+{   
+    SquadStartPos=vec(0,100,0)
+    E=entity()
     TRUE=1
     FALSE=0# why would you ever change these
     UDsens=2 #u/d sensitivity
@@ -33,158 +39,164 @@ if(first())
     DownLimit=-45
     Close = 500 #how much personal space to give our target
     CreationTime = systime()
-
-    
-    function number clk_(Millis_:number) # oooooooooooo clock
+##############################
+#Dunnah toucheh this
+Sy=FALSE
+Sx=FALSE
+    holoCreate(FALSE)
+    holoAng(FALSE,E:angles())
+    holoParent(FALSE,E)
+    holoModel(FALSE,"models/sprops/misc/axis_plane.mdl")
+    dsJoinGroup(owner():steamID()+"NAVI_BFW") # incase multiple people on the server are using this same e2
+	dsSetScope(10)
+function number follow(Follow_,Pos_:vector)
+{
+    if(Hip&Torso)
+		{
+    if(Targ){
+        
+			Dang = Hip:bearing(Pos_)
+			Fang = Torso:elevation(Pos_)
+		}
+		else
+		{
+			Dang = E:bearing(Pos_)
+			Fang = E:elevation(Pos_)
+		}
+	
+}
+##############################
+    function number clk_(Millis_:number, Go_:number) # oooooooooooo clock
 	{
 		local TimerName = Millis_:toString()
 		if(clk(TimerName))
 		{
-			return 1
+			return TRUE
 		}
-		else
+		elseif(Go_)
 		{
 			timer(TimerName, Millis_)
-			return 0
+			return FALSE
 		}
 	}
 	
-	
-    function persue() 
+	function goLeft(Hard_)
 	{
-        
-		if(clk_(50)) #how do I turn B0ss?
+		HardRight   = FALSE
+		HardLeft    = FALSE
+		Facing      = FALSE
+		TurnRight   = FALSE
+		TurnLeft    = TRUE
+		Steer       = -0.5
+		if(Hard_)
 		{
+			HardLeft    = TRUE
+			Steer       = -TRUE
+		}
+		
+	}
+	
+	function goRight(Hard_)
+	{	#same as above but right instead of left
+		Facing      = FALSE
+		TurnRight   = TRUE
+		TurnLeft    = FALSE
+		HardRight   = FALSE
+		HardLeft    = FALSE
+		Steer       = 0.5
+		if(Hard_)
+		{
+			HardRight   = TRUE
+			Steer       = TRUE
+		}
+	}
+	function number straight()
+	{
+#		Facing      = TRUE
+		TurnRight   = FALSE
+		TurnLeft    = FALSE
+		HardRight   = FALSE
+		HardLeft    = FALSE
+		Steer       = FALSE
+Deploy=TRUE
+  return TRUE
+	}
+	function look_up(Hard_)
+	{
+		TurnUp      = TRUE
+		TurnDown    = FALSE
+		Lookin      = FALSE
+		if(Hard_)
+		{
+			
+			
+		}
+	}
+	function look_down(Hard_)
+	{
+		TurnUp      = TRUE
+		TurnDown    = FALSE
+		Lookin      = FALSE
+		if(Hard_)
+		{
+			
+		}
+	}
+	function number look()
+	{
+		Lookin      = TRUE
+		TurnUp      = FALSE
+		TurnDown    = FALSE
+  return 1
+	}
+    function go(Go_)
+	{
+		if(clk_(50,Go_)) #how do I turn B0ss?
+		{
+		
 			if(Dang < -2.0)
-			{  #am turn left
-            HardRight   = FALSE
-            HardLeft    = FALSE
-            Facing      = FALSE
-            TurnRight   = FALSE
-            TurnLeft    = TRUE
-            Steer       = -0.5
+			{  #am walke left
+				goLeft(FALSE)
             }
             if(Dang < -15.0)
-			{ #am turn super left
-                HardLeft    = TurnLeft #good coding practice here, its a hard left
-                Steer       = -1
+			{ #am walkeh super left
+				goLeft(TRUE)
             }
 		
-
-        
 			if(Dang > 2.0)
-			{ #same as above but right instead of left
-				Facing      = FALSE 
-				TurnRight   = TRUE
-				TurnLeft    = FALSE
-				HardRight   = FALSE
-				HardLeft    = FALSE
-				Steer       = 0.5
-            
-				if (Dang > 15.0)
-				{            
-					HardRight   = TurnRight    
-					Steer       = TRUE
-				}
+			{
+				goRight(FALSE)
 			}
+            if (Dang > 15.0)
+			{
+				goRight(TRUE)
+			}
+			
+			
 			if(Dang>=-2&&Dang<=2)
 			{ #Hey im going straight at the thing!
-				Facing      = TRUE
-				TurnRight   = FALSE
-				TurnLeft    = FALSE    
-				HardRight   = FALSE
-				HardLeft    = FALSE
-				Steer       = FALSE
+				straight()
 			}
-            
 			if(Fang > 1.0)
 			{
-				TurnUp      = TRUE
-				TurnDown    = FALSE
-				Lookin      = FALSE
+				look_up(FALSE)
 			}
 			elseif(Fang < -1.0)
 			{
-				TurnUp      = FALSE
-				TurnDown    = TRUE
-				Lookin      = FALSE
+				look_down(FALSE)
 			}
 			else
 			{
-				Lookin      = TRUE
-				TurnUp      = FALSE
-				TurnDown    = FALSE
+    Lookin=TRUE
+				look()
 			}
-        
-			if(TurnUp)
-			{
-				Y=Y+UDsens
-				Y=$Y*UDsens+Y#dont ask me later, its a sort of smoother :v
-			}
-        
-			if(Y>UpLimit)
-			{
-				Y=UpLimit#that soft quota for the head
-			}
-			elseif(TurnDown)
-			{
-				Y=Y-UDsens
-				Y=$Y*-UDsens+Y
-			}
-        
-			if(Y<DownLimit)
-			{
-				Y=DownLimit
-			}
-        
-			if(TurnLeft)
-			{
-				X=X-LRsens
-				X=$X*-LRsens+X 
-			}
-			elseif(TurnRight)
-			{
-				X=X+LRsens
-				X=$X*LRsens+X
-			}
-			else
-			{
-			}       
-			if(HardRight)
-			{
-				X=X+LRsensH
-				X=$X*LRsensH+X
-			}
-			elseif(HardLeft)
-			{
-				X=X-LRsensH
-				X=$X*-LRsensH+X
-			}
-			else
-			{}
+	
 		}
-    
-
-        #I don't remember my logic behind this but it works and looks like
-        #I probably did this for an interesting reason... no, actually im commenting one for now.. ill see about it later
-
-        #[        
-        if(Tdist < 500) 
-		{
-            Deploy = TRUE 
-            Close=Tdist 
-            W = FALSE
-        }
-        ]#
-        
         if(Tdist < Close)
 		{ #woah too close, backin up'
             S      =    TRUE
             W      =    FALSE
             Deploy =    TRUE
-        
-    
-    
         }
 		else#oi, get back here
 		{
@@ -192,32 +204,121 @@ if(first())
             S      = FALSE
             W      = TRUE
         }
-
         return
     }
-    
+	function void obstacleAvoidance(Avoid_)
+	{
+		if(clk_(20,Avoid_))
+		{
+			if(Bsr<50)
+			{
+				W = FALSE
+				Steer=1
+				timer("settle",2000)
+			}
+			if(Bsl<50)
+			{	
+				W = FALSE
+				Steer=1
+				timer("settle",2000)
+			}
+			if(clk("settle"))
+			{
+				W = FALSE
+				Steer=0
+			}
+		}
+	}
+    function void rocketLogic(Dothelogics_)
+	{
+		if(clk_(Rocketpodspeed,Dothelogics_))#Podspeed you magnificent rocket
+		{	###force the launching of rockets
+			if(Batter)
+			{
+				ReloadRockets=FALSE
+				Timer++
+            }
+            if(Timer==50&&Batter&&R1)
+			{
+                M1=TRUE
+                M3=FALSE
+                Timer++
+            }
+            if(Timer==100&&Batter&&R2)
+			{
+                M1=FALSE
+                M2=TRUE
+                Timer++
+            }
+            if(Timer==150&&Batter&&R3)
+			{
+                M3=TRUE
+                M2=FALSE
+                Timer++
+                timer("m2",800)
+            }
+            if(Timer>450)
+			{
+                Timer=FALSE
+            }
+			if(R1==TRUE&R2==TRUE&R3==TRUE)#if all rockets reload,
+			{
+				Ready=TRUE
+			}
+			if(R1==FALSE&&R2==FALSE&&R3==FALSE)
+			{
+				Ready=FALSE
+			}
+		
+			else
+			{
+				M1=FALSE
+				M2=FALSE
+				M3=FALSE
+				Timer=FALSE
+				ReloadRockets=TRUE
+            }
+			if(R1==FALSE&&R2==FALSE&&R3==FALSE)
+			{
+            Ready=FALSE
+			}
+			else
+			{
+				M1=FALSE
+				M2=FALSE
+				M3=FALSE
+				Timer=FALSE
+				ReloadRockets=TRUE
+			}
+			if(Facing&&Lookin&&R1&&R2&&R3&&Tdist<=6500)
+			{
+				Raise=TRUE
+			}
+			else
+			{
+				Raise=FALSE
+            }
+		}
+	}
     function void idManagement()
 	{
-        local Time = systime() 
+        local Time = systime()
         if(!Master:isValid())
 		{
             if(first())
 			{ #request status at start
                 dsSend("leader_check",owner():steamID()+"NAVI_BFW",1)
-                
             }
 			elseif(Time - CreationTime >= 0.5)
 			{ #if no one replies in 0.5 second, become master chip and alert any other spawned chips
-                Master = entity() 
-                dsSend("i_am",owner():steamID()+"NAVI_BFW",entity())
-                print(entity():id() + " becoming master chip")
+                Master = E
+                dsSend("i_am",owner():steamID()+"NAVI_BFW",E)
+                print(E:id() + " becoming master chip")
             }
         }
-        
         if(dsClk("i_am"))
 		{ #receiving who the master chip is
             local IncomingData = dsGetEntity()
-            
             if(Master:isValid())
 			{
                 if(IncomingData != Master)
@@ -231,139 +332,147 @@ if(first())
 			else
 			{
                 #chip needs master, found it.
-                Master = dsGetEntity()          
-                print("chip " + entity():id() + " swearing loyalty to " + Master:id())      
+                Master = dsGetEntity()
+                print("chip " + E:id() + " swearing loyalty to " + Master:id())
             }
         }
-        
-        if(dsClk("leader_check") & Master == entity())
+        if(dsClk("leader_check") & Master == E)
 		{ #if this chip is the master chip, tell them whats up
-            dsSend("i_am",owner():steamID()+"NAVI_BFW",entity())
+            dsSend("i_am",owner():steamID()+"NAVI_BFW",E)
         }
+      ################################arrays >_<
+        if(Master == E){
+            if(clk_(1000,TRUE)){ #if this chip is the master, compile the list of slave e2s every second
+                SlaveE2s = dsProbe(owner():steamID()+"NAVI_BFW")
+                dsSend("slaveList",owner():steamID()+"NAVI_BFW",SlaveE2s)
+            }
+        }else{
+            if(dsClk("slaveList")){
+                SlaveE2s = dsGetArray()
+            }
+        }      
     }
     
-    function void main()
-	{#moving this here cus i think it would be better outside the clk
-
-        if(Bsr<50)
+    
+      
+       
+    function void think()
+	{
+    	if(Targ)
 		{
-            W = FALSE
-            Steer=1
-            timer("settle",2000)
-        }
-        
-        if(Bsl<50)
+			Tdist= Targ:pos():distance(E:pos())
+		}
+		
+  if(TurnUp)
 		{
-            W = FALSE
-            Steer=1
-            timer("settle",2000)
-        }        
-        if(clk("settle"))
+			Y=Y+UDsens
+			Y=$Y*UDsens+Y#dont ask me later, its a sort of smoother :v
+		}
+		if(Y>UpLimit)
 		{
-            W = FALSE
-            Steer=0
-        }
-        
-        if(Hip&Torso)
+			Y=UpLimit#that soft quota for the head
+		}
+		elseif(TurnDown)
 		{
-            Dang = Hip:bearing(AimPos)
-            Fang = Torso:elevation(AimPos)
-        }
+			Y=Y-UDsens
+			Y=$Y*-UDsens+Y
+		}
+		if(Y<DownLimit)
+		{
+			Y=DownLimit
+		}
+        if(TurnLeft)
+		{
+			X=X-LRsens
+			X=$X*-LRsens+X
+		}
+		elseif(TurnRight)
+		{
+			X=X+LRsens
+			X=$X*LRsens+X
+		}
 		else
 		{
-            Dang = entity():bearing(AimPos)
-            Fang = entity():elevation(AimPos)
-        }   
-        if(Targ)
+			
+		}
+		if(HardRight)
 		{
-            Tdist= Targ:pos():distance(entity():pos())
-        }
-        
-        #Ang = entity():angles()   Wait why is this here
-    
-        if(R1==1&R2==1&R3==1)
+			X=X+LRsensH
+			X=$X*LRsensH+X
+		}
+		elseif(HardLeft)
 		{
-            Ready=1
-        }
-        
-        if(R1==0&&R2==0&&R3==0)
-		{
-            Ready=0
-        }
-        ###force the launching of rockets
-        
-		if(clk_(Rocketpodspeed))#Podspeed you magnificent rocket
+			X=X-LRsensH
+			X=$X*-LRsensH+X
+		}
+		else
 		{}
-		if(Batter)
-		{
-            ReloadRockets=0
-            Timer++
-            
-            if(Timer==50&&Batter&&R1)
-			{
-                M1=1
-                M3=0
-                Timer++
-            }
-            if(Timer==100&&Batter&&R2)
-			{
-                M1=0
-                M2=1
-                Timer++
-            }
-            if(Timer==150&&Batter&&R3)
-			{
-                M3=1
-                M2=0
-                Timer++
-                timer("m2",800)
-            }
-            if(Timer>450)
-			{
-                Timer=0
-            }
-        }
-		else
-		{
-        
-            M1=0 
-            M2=0 
-            M3=0
-            Timer=0
-            ReloadRockets=1
-            
-        }
-        
-        if(Target && Tdist>Close)#I think theres already a conditional in persue() like this...
-		{
-            persue()
-        }        
-        if(Facing&&Lookin&&R1&&R2&&R3&&Tdist<=6500)
-		{
-            Raise=1
-        }
-		else
-		{
-            Raise=0
-        }
-        #[    
-        if(~Enable)
-		{
-            if (Enable)
-			{
-                interval(32)
-            }
-			else
-			{
-                stoptimer("interval")
-            }                
-        }
-        ]#
-    
+        #Ang = E:angles()   Wait why is this here
+		
     }
 }
+function formation()
+    {
+        SC = SlaveE2s:count()
+        
+        if(Master == entity()){
+            local RowSize = 3  
+            
+            local XOffset = 150
+            local XSpacing = 300
+    
+            local YOffset = 150      
+            local YSpacing = 300
+             if(clk_(TRUE,210))
+                    {
+                           for(II=1,Squadron:count())
+                            {
+                                 Squadron[II,vector]=entity():toWorld(SquadStartPos+vec(X*XSpacing + XOffset,Y*YSpacing + YOffset,0))
+                            }
+                    }
+            if(changed(SC)){
+                local SCChange = $SC
+                print(SCChange)
+                
+                if(SCChange > 0){ #if we gained       
+                    for(I=1,SC){ #creation of new holos
+                        if(!holoEntity(I):isValid()){
+                            local CleanDivide = int(I/RowSize) == I/RowSize
+                            
+                            local X = CleanDivide ? RowSize - 1 : I % RowSize - 1
+                            local Y = CleanDivide ? I/RowSize - 1 : int(I/RowSize)
+                            
+                            #[
+                            I     1,2,3,4,5, 6,7,8,9,10, 11,12,13,14,15
+                            X      0,1,2,3,4, 0,1,2,3,4,  0, 1, 2, 3, 4
+                            Y      0,0,0,0,0, 1,1,1,1,1,  2, 2, 2, 2, 2
+                            I/X   0.1-1      1.1-2       2.1-3
+                            ]#           
+                            
+                            holoCreate(I)
+                            holoParent(I,entity())
+                            holoPos(I,entity():toWorld(SquadStartPos+vec(X*XSpacing + XOffset,Y*YSpacing + YOffset,0)))
+                            Squadron=SlaveE2s:clone()
+                           
+                         
+                        }
+                       
+                    }
+                }else{ #if we lost    
+                    #delete old holos 
+                    for(I=SC+1,SC+abs(SCChange)){
+                        holoDelete(I)
+                        #squadm8pos(1,I,vec(X*XSpacing + XOffset,Y*YSpacing + YOffset,0))
+                    }                 
+                }
+               
+            }        
+        }
+    }
 
+}
 interval(32)
-
 idManagement()
-main()
+go(1)
+think()
+formation()
