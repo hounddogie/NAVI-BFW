@@ -1,12 +1,13 @@
-@name NAVI BFW-official
+@name NAVI BFW-official-Squadrontest
 @inputs Hip:entity Torso:entity #alignment
 @inputs  Bsl Bsr R1 R2 R3 Batter Target Targ:entity Enable AimPos:vector  #[ Pos to aim at]#
-@outputs Sx Sy SlaveE2s:array Master:entity Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
+@outputs Sx Sy Steer ReloadRockets Ang:angle Deploy W S Tdist M1 M2 M3 Timer Raise Facing X Lookin Y TurnUp TurnDown HardLeft HardRight  TurnLeft TurnRight Dang
 @persist Rocketpodspeed Tdist Persue Dang Timer Facing Fang TurnUp TurnDown Bob
 @persist T TRUE FALSE  E:entity
 @persist UDsens LRsens UDsensH  LRsensH X Y
 @persist UpLimit DownLimit Close
 @persist Master:entity SC CreationTime Frm
+@persist Squadron:array SlaveE2s:array SquadID DesiredPos:vector #<-------- only for slave e2s
 @trigger Enable
 # if(duped())
 # {
@@ -119,10 +120,10 @@ Deploy=TRUE
 		TurnDown    = FALSE
   return 1
 	}
-    function follow(Follow_)
+function go(Go_)
 	{
-		if(clk_(50,Follow_)) #how do I turn B0ss?
-		{
+#[		if(clk_(27,Go_)) #how do I turn B0ss?
+		{]#
 		
 			if(Dang < -2.0)
 			{  #am walke left
@@ -160,22 +161,27 @@ Deploy=TRUE
     Lookin=TRUE
 				look()
 			}
-	
+	W=TRUE #testing purposes
 		}
-        if(Tdist < Close)
-		{ #woah too close, backin up'
-            S      =    TRUE
-            W      =    FALSE
-            Deploy =    TRUE
-        }
-		else#oi, get back here
+
+    function number follow(Follow_,Pos_:vector)
+{
+    if(Hip&Torso)
 		{
-            Deploy = FALSE
-            S      = FALSE
-            W      = TRUE
-        }
-        return
-    }
+    if(Targ){
+#[if(clk_(25,TRUE)){]#
+			Dang = Hip:bearing(Pos_)
+			Fang = Torso:elevation(Pos_)
+		
+#[		elseif(clk_(26,TRUE)){]#
+    
+			Dang = E:bearing(Pos_)
+			Fang = E:elevation(Pos_)
+		
+}
+}
+return TRUE
+}
 	function void obstacleAvoidance(Avoid_)
 	{
 		if(clk_(20,Avoid_))
@@ -328,18 +334,7 @@ Deploy=TRUE
        
     function void think()
 	{
-		if(Hip&Torso)
-		{
-    if(Targ){
-        
-			Dang = Hip:bearing(AimPos)
-			Fang = Torso:elevation(AimPos)
-		}
-		else
-		{
-			Dang = E:bearing(AimPos)
-			Fang = E:elevation(AimPos)
-		}
+	
 		if(Targ)
 		{
 			Tdist= Targ:pos():distance(E:pos())
@@ -391,57 +386,95 @@ Deploy=TRUE
         #Ang = E:angles()   Wait why is this here
 		
     }
-}
+
+
+    function number whoAmI() {
+        for(I=1,SlaveE2s:count()){
+            if(SlaveE2s[I,entity] == entity()){
+                # that me!
+                return I
+            }
+        }
+        return FALSE
+    }
+
+
 function formation()
     {
         SC = SlaveE2s:count()
         
-        if(Master == entity()){
-            local RowSize = 5     
+        if(Master == entity()){ # if this is the master, broadcast positions
+            local RowSize =2
             
-            local XOffset = 0
-            local XSpacing = 30
+            local XOffset = -100
+            local XSpacing = 700
     
-            local YOffset = 0        
-            local YSpacing = 30
-            
-            for(I=1,SC){ #creation of new holos
-                if(!holoEntity(I):isValid()){
-                    local CleanDivide = int(I/RowSize) == I/RowSize
-                    
-                    local X = CleanDivide ? RowSize - 1 : I % RowSize - 1
-                    local Y = CleanDivide ? I/RowSize - 1 : int(I/RowSize)
-                    
-                    #[
-                    I     1,2,3,4,5, 6,7,8,9,10, 11,12,13,14,15
-                    X      0,1,2,3,4, 0,1,2,3,4,  0, 1, 2, 3, 4
-                    Y      0,0,0,0,0, 1,1,1,1,1,  2, 2, 2, 2, 2
-                    I/X   0.1-1      1.1-2       2.1-3
-                    ]#           
-                    
-                    holoCreate(I)
-                    holoParent(I,entity())
-                    holoPos(I,entity():toWorld(vec(X*XSpacing + XOffset,Y*YSpacing + YOffset,0)))
-                }
-            }
-            
-            #delete old holos
-            
+            local YOffset = 0       
+            local YSpacing = 700
+
             if(changed(SC)){
                 local SCChange = $SC
-                if(SCChange < 0){ #if we lost slaves
+                
+                if(SCChange > 0){ #if we gained       
+                    Squadron = array()
+                    for(I=1,SC){ #creation of new holos
+                        local CleanDivide = int(I/RowSize) == I/RowSize
+                            
+                        local X = CleanDivide ? RowSize - 1 : I % RowSize - 1
+                        local Y = CleanDivide ? I/RowSize - 1 : int(I/RowSize)
+                            
+                        #[
+                        I     1,2,3,4,5, 6,7,8,9,10, 11,12,13,14,15
+                        X      0,1,2,3,4, 0,1,2,3,4,  0, 1, 2, 3, 4
+                        Y      0,0,0,0,0, 1,1,1,1,1,  2, 2, 2, 2, 2
+                        I/X   0.1-1      1.1-2       2.1-3
+                        ]#        
+                               
+                        local Pos = vec(X*XSpacing + XOffset,Y*YSpacing + YOffset,0)
+                        Squadron[I,vector] = Pos  
+                                              
+                        if(!holoEntity(I):isValid()){ #debug holos                       
+                            holoCreate(I)
+                            holoParent(I,entity())
+                            holoPos(I,entity():toWorld(Pos))
+                        }
+                    }
+                    
+                    dsSend("squadron",owner():steamID()+"NAVI_BFW",Squadron)
+                    
+                }else{ #if we lost    
+                    #delete old holos 
                     for(I=SC+1,SC+abs(SCChange)){
-                        print(I)
                         holoDelete(I)
                     }
+                    
                 }
             }        
+        }else{ #this chip is a slave, find its place in the broadcasted formation
+            if(dsClk("squadron")){
+                Squadron = dsGetArray()
+            }
+            
+            if(changed(SC)){ #squad count changed, recheck current id
+                SquadID = whoAmI()
+            }
+            
+            if(SquadID){
+                DesiredPos = Master:toWorld(Squadron[SquadID,vector])
+            }
         }
         
     }
 }
 interval(32)
 idManagement()
-follow(1)
-think()
 formation()
+if(Master==E){
+    follow(1,Targ:pos())
+}
+else{
+follow(1,DesiredPos)
+}
+think()
+go(1)
+obstacleAvoidance(1)
